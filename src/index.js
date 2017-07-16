@@ -65,8 +65,8 @@ bot.texts({
   eth: {
     status: dedent`
       CryptoMKT (ETH/CLP):
-      *<%= bid %>* :outbox_tray: Venta _(bid)_
-      *<%= ask %>* :inbox_tray: Compra _(ask)_
+      *<%= ask %>* :outbox_tray: Venta _(bid)_
+      *<%= bid %>* :inbox_tray: Compra _(ask)_
     `,
   },
 });
