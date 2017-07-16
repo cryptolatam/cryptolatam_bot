@@ -6,7 +6,8 @@
   "main": "src/index.js",
   "scripts": {
     "dev": "nodemon src/index.js --delay 1",
-    "start": "node src/index.js"
+    "start": "node src/index.js",
+    "lint": "eslint ."
   },
   "author": {
     "email": "patricio@lopezjuri.com",
@@ -36,6 +37,10 @@
   "optionalDependencies": {},
   "peerDependencies": {},
   "devDependencies": {
-    "nodemon": "^1.11.0"
+    "eslint": "^4.0.0",
+    "eslint-config-prettier": "^2.1.1",
+    "eslint-plugin-prettier": "^2.1.1",
+    "nodemon": "^1.11.0",
+    "prettier": "^1.5.3"
   }
 }
