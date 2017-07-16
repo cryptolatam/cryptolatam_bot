@@ -1,0 +1,4 @@
+start - Iniciar este maravilloso bot
+eth - Muestra cómo va el mercado de Ether.
+about - Información de este bot
+help - ¿No sabes cómo funciono?
