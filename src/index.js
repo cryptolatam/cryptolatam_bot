@@ -4,6 +4,7 @@ const bb = require("bot-brother");
 const redis = require("redis");
 const Bluebird = require("bluebird");
 const dedent = require("dedent");
+const _ = require("lodash");
 const moment = require("moment");
 const fs = require("mz/fs");
 const path = require("path");
@@ -67,6 +68,8 @@ bot.texts({
       CryptoMKT (ETH/CLP):
       *<%= ask %>* :outbox_tray: Venta _(bid)_
       *<%= bid %>* :inbox_tray: Compra _(ask)_
+
+      _<%= date -%>_
     `,
   },
 });
@@ -115,7 +118,35 @@ bot.command(new RegExp("eth", "i")).invoke(async ctx => {
   await ctx.bot.api.sendChatAction(ctx.meta.chat.id, "typing");
   const { current } = await cryptomkt.getCandle();
 
+  ctx.inlineKeyboard([
+    [
+      {
+        ":arrows_counterclockwise: Actualizar": { go: "eth" },
+      },
+    ],
+  ]);
+
+  ctx.data.date = moment().format("YYYY/MM/DD HH:mm:ss");
   ctx.data.ask = Money.render(current.ask);
   ctx.data.bid = Money.render(current.bid);
-  return await ctx.sendMessage("eth.status", { parse_mode: "Markdown" });
+
+  if (ctx.isRedirected) {
+    await ctx.updateText("eth.status", {
+      parse_mode: "Markdown",
+      // reply_markup: { inline_keyboard: [[]] },
+    });
+  } else {
+    await ctx.sendMessage("eth.status", {
+      parse_mode: "Markdown",
+      reply_markup: { inline_keyboard: [[]] },
+    });
+  }
 });
+
+// eslint-disable-next-line
+console.log(dedent`
+  Bot Started with:
+  - URL: ${url}
+  - PORT: ${config.get("PORT")}
+  - TOKEN: ${_.fill([...token], "*", 0, -5).join("")}
+`);

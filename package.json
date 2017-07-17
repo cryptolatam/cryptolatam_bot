@@ -20,11 +20,11 @@
   },
   "license": "UNLICENSED",
   "dependencies": {
+    "@cryptolatam/cryptomkt": "^0.1.0",
+    "@cryptolatam/money": "^0.1.0",
     "axios": "^0.16.2",
     "bluebird": "^3.5.0",
     "bot-brother": "^2.1.5",
-    "@cryptolatam/cryptomkt": "^0.1.0",
-    "@cryptolatam/money": "^0.1.0",
     "dedent": "^0.7.0",
     "dotenv": "^4.0.0",
     "lodash": "^4.17.4",
