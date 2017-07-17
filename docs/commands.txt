@@ -1,4 +1,5 @@
 start - Iniciar este maravilloso bot
-eth - Muestra cómo va el mercado de Ether.
+btc - Muestra cómo va el mercado de Ether.
+eth - Muestra cómo va el mercado de Bitcoin.
 about - Información de este bot
 help - ¿No sabes cómo funciono?

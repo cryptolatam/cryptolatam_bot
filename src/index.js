@@ -9,6 +9,7 @@ const moment = require("moment");
 const fs = require("mz/fs");
 const path = require("path");
 
+const SurBTC = require("@cryptolatam/surbtc").default;
 const CryptoMKT = require("@cryptolatam/cryptomkt").default;
 const Money = require("@cryptolatam/money");
 
@@ -20,6 +21,7 @@ const info = require("../package.json");
 
 const config = configuration();
 
+const surbtc = new SurBTC();
 const cryptomkt = new CryptoMKT();
 const client = redis.createClient({
   port: config.get("REDIS:PORT"),
@@ -63,12 +65,14 @@ bot.texts({
     - Bitcoin: \`<%= info.author.btc %>\`
     - Ether: \`<%= info.author.eth %>\`
   `,
-  eth: {
+  market: {
     status: dedent`
-      CryptoMKT (ETH/CLP):
-      *<%= ask %>* :outbox_tray: Venta _(bid)_
-      *<%= bid %>* :inbox_tray: Compra _(ask)_
-
+      <% exchanges.forEach(exchange => { %>
+      :bank: *<%= exchange.name %>* (<%= exchange.change %>):
+      :outbox_tray: BID: \`<%= exchange.ask %>\`
+      :inbox_tray: ASK: \`<%= exchange.bid %>\`
+      :bar_chart: Volumen: \`<%= exchange.volume %>\`
+      <% }) %>
       _<%= date -%>_
     `,
   },
@@ -110,13 +114,43 @@ bot.command("about").invoke(async ctx => {
   await ctx.sendMessage("about", { parse_mode: "Markdown" });
 });
 
-bot.command("btc").invoke(async ctx => {
-  return await ctx.sendMessage("No implementado todavía.");
+bot.command(new RegExp("btc", "i")).invoke(async ctx => {
+  await ctx.bot.api.sendChatAction(ctx.meta.chat.id, "typing");
+  const exchanges = await Promise.all([surbtc.getCandle("BTC", "CLP")]);
+
+  ctx.inlineKeyboard([
+    [
+      {
+        ":arrows_counterclockwise: Actualizar": { go: "btc" },
+      },
+    ],
+  ]);
+
+  ctx.data.date = moment().format("YYYY/MM/DD HH:mm:ss");
+  ctx.data.exchanges = exchanges.map(exchange => ({
+    name: "SurBTC",
+    change: "BTC/CLP",
+    ask: Money.render(exchange.current.ask),
+    bid: Money.render(exchange.current.bid),
+    volume: Money.render(exchange.current.volume),
+  }));
+
+  if (ctx.isRedirected) {
+    await ctx.updateText("market.status", {
+      parse_mode: "Markdown",
+      // reply_markup: { inline_keyboard: [[]] },
+    });
+  } else {
+    await ctx.sendMessage("market.status", {
+      parse_mode: "Markdown",
+      reply_markup: { inline_keyboard: [[]] },
+    });
+  }
 });
 
 bot.command(new RegExp("eth", "i")).invoke(async ctx => {
   await ctx.bot.api.sendChatAction(ctx.meta.chat.id, "typing");
-  const { current } = await cryptomkt.getCandle();
+  const exchanges = await Promise.all([cryptomkt.getCandle(), surbtc.getCandle("ETH", "CLP")]);
 
   ctx.inlineKeyboard([
     [
@@ -127,16 +161,21 @@ bot.command(new RegExp("eth", "i")).invoke(async ctx => {
   ]);
 
   ctx.data.date = moment().format("YYYY/MM/DD HH:mm:ss");
-  ctx.data.ask = Money.render(current.ask);
-  ctx.data.bid = Money.render(current.bid);
+  ctx.data.exchanges = exchanges.map((exchange, i) => ({
+    name: i === 0 ? "CryptoMKT" : "SurBTC",
+    change: "ETH/CLP",
+    ask: Money.render(exchange.current.ask),
+    bid: Money.render(exchange.current.bid),
+    volume: Money.render(exchange.current.volume),
+  }));
 
   if (ctx.isRedirected) {
-    await ctx.updateText("eth.status", {
+    await ctx.updateText("market.status", {
       parse_mode: "Markdown",
       // reply_markup: { inline_keyboard: [[]] },
     });
   } else {
-    await ctx.sendMessage("eth.status", {
+    await ctx.sendMessage("market.status", {
       parse_mode: "Markdown",
       reply_markup: { inline_keyboard: [[]] },
     });

@@ -20,8 +20,9 @@
   },
   "license": "UNLICENSED",
   "dependencies": {
-    "@cryptolatam/cryptomkt": "^0.1.0",
-    "@cryptolatam/money": "^0.1.0",
+    "@cryptolatam/cryptomkt": "^0.2.0",
+    "@cryptolatam/money": "^0.1.5",
+    "@cryptolatam/surbtc": "^0.2.0",
     "axios": "^0.16.2",
     "bluebird": "^3.5.0",
     "bot-brother": "^2.1.5",
