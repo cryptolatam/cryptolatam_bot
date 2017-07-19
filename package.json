@@ -9,6 +9,13 @@
     "start": "node src/index.js",
     "lint": "eslint ."
   },
+  "engines": {
+    "node": ">=8.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/cryptolatam/cryptolatam_bot.git"
+  },
   "author": {
     "email": "patricio@lopezjuri.com",
     "name": "Patricio López Juri",
@@ -20,9 +27,9 @@
   },
   "license": "UNLICENSED",
   "dependencies": {
-    "@cryptolatam/cryptomkt": "^0.2.0",
-    "@cryptolatam/money": "^0.1.5",
-    "@cryptolatam/surbtc": "^0.2.0",
+    "@cryptolatam/cryptomkt": "^0.2.1",
+    "@cryptolatam/money": "^0.1.7",
+    "@cryptolatam/surbtc": "^0.2.1",
     "axios": "^0.16.2",
     "bluebird": "^3.5.0",
     "bot-brother": "^2.1.5",
