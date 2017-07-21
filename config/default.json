@@ -5,9 +5,11 @@
   "PAGINATION": {
     "SIZE": 4
   },
+  "SESSION": "REDIS",
   "REDIS": {
     "HOST": "127.0.0.1",
-    "PORT": "6379"
+    "PORT": "6379",
+    "PASSWORD": false
   },
   "TELEGRAM": {
     "TOKEN": null
