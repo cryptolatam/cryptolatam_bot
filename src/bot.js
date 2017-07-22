@@ -11,7 +11,6 @@ const Money = require("@cryptolatam/money");
 module.exports = function createBot(options) {
   const { config, manager, surbtc, cryptomkt, info } = options;
   const token = config.get("TELEGRAM:TOKEN");
-
   const COMMANDS_PATH = path.join(__dirname, "..", "docs", "commands.txt");
 
   const bot = bb({
@@ -62,10 +61,17 @@ module.exports = function createBot(options) {
   });
 
   bot.command(/.*/).use("before", async ctx => {
-    const { name, args } = ctx.command;
-    const date = moment().format("YYYY/MM/DD HH:mm:ss");
-    // eslint-disable-next-line
-    console.log(date, `@${ctx.meta.user.username} (${ctx.meta.user.language_code}):`, `/${name} ${args}`);
+    // eslint-disable-next-line no-console
+    console.log(dedent`
+      ${moment().format("YYYY/MM/DD HH:mm:ss")}
+      USER: ${JSON.stringify(ctx.meta.user)}
+      CHAT: ${JSON.stringify(ctx.meta.chat)}
+      FROM: ${JSON.stringify(ctx.meta.from)}
+      CMD: ${JSON.stringify(ctx.command)}
+      ANSWER: ${JSON.stringify(ctx.answer)}
+      CALLBACK: ${JSON.stringify(ctx.callbackData)}
+      ---
+    `);
   });
 
   /**

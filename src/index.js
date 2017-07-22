@@ -1,5 +1,3 @@
-/* eslint no-console:0 */
-
 "use strict";
 
 const dedent = require("dedent");
@@ -25,7 +23,7 @@ const cryptomkt = new CryptoMKT({
   timeout: 5000,
 });
 
-// eslint-disable-next-line
+// eslint-disable-next-line no-unused-vars
 const bot = createBot({
   manager,
   config,
@@ -34,6 +32,7 @@ const bot = createBot({
   info,
 });
 
+// eslint-disable-next-line no-console
 console.log(dedent`
   Bot Started with:
   - NODE_ENV: ${config.get("NODE_ENV")}
