@@ -9,6 +9,11 @@
     "start": "node src/index.js",
     "lint": "eslint ."
   },
+  "files": [
+    "src",
+    "docs",
+    "config"
+  ],
   "engines": {
     "node": ">=8.0.0"
   },
