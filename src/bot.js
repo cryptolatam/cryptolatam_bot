@@ -32,21 +32,24 @@ module.exports = function createBot(options) {
       /<%= command -%>
       <% }); -%>
     `,
-    about: dedent`
-      :bust_in_silhouette: *Autor:*
-       • <%= info.author.name %>
-       • <%= info.author.email %>
-       • <%= info.author.url %>
-       • @<%= info.author.telegram %>
-
-      :pray: *Ayúdame a mantener esto con alguna donación:*
-      - PayPal:
-        <%= info.author.paypal %>
-      - Bitcoin:
-        \`<%= info.author.btc %>\`
-      - Ether:
-        \`<%= info.author.eth %>\`
-    `,
+    about: {
+      info: dedent`
+        :bust_in_silhouette: *Autor:*
+        • <%= info.author.name %>
+        • <%= info.author.email %>
+        • <%= info.author.url %>
+        • @<%= info.author.telegram %>
+      `,
+      donations: dedent`
+        :pray: *Ayúdame a mantener esto con alguna donación:*
+        - PayPal:
+          <%= info.author.paypal %>
+        - Bitcoin:
+          \`<%= info.author.btc %>\`
+        - Ether:
+          \`<%= info.author.eth %>\`
+      `,
+    },
     market: {
       status: dedent`
         <% exchanges.forEach(exchange => { %>
@@ -100,7 +103,8 @@ module.exports = function createBot(options) {
    */
   bot.command("about").invoke(async ctx => {
     ctx.data.info = info;
-    await ctx.sendMessage("about", { parse_mode: "Markdown" });
+    await ctx.sendMessage("about.info", { parse_mode: "Markdown" });
+    await ctx.sendMessage("about.donations", { parse_mode: "Markdown" });
   });
 
   bot.command(new RegExp("btc", "i")).invoke(async ctx => {
