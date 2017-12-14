@@ -58,7 +58,6 @@ module.exports = function createBot(options) {
         :inbox_tray: ASK: \`<%= exchange.bid %>\`
         :bar_chart: Volumen: \`<%= exchange.volume %>\`
         <% }) %>
-        _<%= date -%>_
       `,
     },
   });
@@ -121,7 +120,6 @@ module.exports = function createBot(options) {
     const promises = [surbtc.getCandle("BTC", "CLP")].map(p => Bluebird.resolve(p).reflect());
     const exchanges = await Bluebird.all(promises);
 
-    ctx.data.date = moment().format("YYYY/MM/DD HH:mm:ss");
     ctx.data.exchanges = exchanges.map(inspection => {
       if (!inspection.isFulfilled()) {
         return {
@@ -154,7 +152,6 @@ module.exports = function createBot(options) {
     const promises = [cryptomkt.getCandle(), surbtc.getCandle("ETH", "CLP")].map(p => Bluebird.resolve(p).reflect());
     const exchanges = await Bluebird.all(promises);
 
-    ctx.data.date = moment().format("YYYY/MM/DD HH:mm:ss");
     ctx.data.exchanges = exchanges.map((inspection, i) => {
       if (!inspection.isFulfilled()) {
         return {
