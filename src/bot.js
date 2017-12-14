@@ -3,6 +3,7 @@
 const bb = require("bot-brother");
 const dedent = require("dedent");
 const moment = require("moment");
+const Bluebird = require("bluebird");
 const fs = require("mz/fs");
 const path = require("path");
 
@@ -42,12 +43,11 @@ module.exports = function createBot(options) {
       `,
       donations: dedent`
         :pray: *Ayúdame a mantener esto con alguna donación:*
-        - PayPal:
-          <%= info.author.paypal %>
-        - Bitcoin:
-          \`<%= info.author.btc %>\`
-        - Ether:
-          \`<%= info.author.eth %>\`
+
+        <% donations.forEach(item => { -%>
+        - <%= item.name %>:
+          \`<%= item.address %>\`
+        <% }); -%>
       `,
     },
     market: {
@@ -106,75 +106,78 @@ module.exports = function createBot(options) {
    */
   bot.command("about").invoke(async ctx => {
     ctx.data.info = info;
+    ctx.data.donations = [
+      { name: "BTC", address: config.get("DONATIONS:BTC") },
+      { name: "ETH", address: config.get("DONATIONS:ETH") },
+      { name: "PayPal", address: config.get("DONATIONS:PAYPAL") },
+    ];
     await ctx.sendMessage("about.info", { parse_mode: "Markdown" });
     await ctx.sendMessage("about.donations", { parse_mode: "Markdown" });
   });
 
   bot.command(new RegExp("btc", "i")).invoke(async ctx => {
     ctx.bot.api.sendChatAction(ctx.meta.chat.id, "typing");
-    const exchanges = await Promise.all([surbtc.getCandle("BTC", "CLP")]);
 
-    ctx.inlineKeyboard([
-      [
-        {
-          ":arrows_counterclockwise: Actualizar": { go: "btc" },
-        },
-      ],
-    ]);
+    const promises = [surbtc.getCandle("BTC", "CLP")].map(p => Bluebird.resolve(p).reflect());
+    const exchanges = await Bluebird.all(promises);
 
     ctx.data.date = moment().format("YYYY/MM/DD HH:mm:ss");
-    ctx.data.exchanges = exchanges.map(exchange => ({
-      name: "SurBTC",
-      change: "BTC/CLP",
-      ask: Money.render(exchange.current.ask),
-      bid: Money.render(exchange.current.bid),
-      volume: Money.render(exchange.current.volume),
-    }));
+    ctx.data.exchanges = exchanges.map(inspection => {
+      if (!inspection.isFulfilled()) {
+        return {
+          name: "SurBTC",
+          change: "BTC/CLP",
+          ask: "ERROR",
+          bid: "ERROR",
+          volume: "ERROR",
+        };
+      } else {
+        const exchange = inspection.value();
+        return {
+          name: "SurBTC",
+          change: "BTC/CLP",
+          ask: Money.render(exchange.current.ask),
+          bid: Money.render(exchange.current.bid),
+          volume: Money.render(exchange.current.volume),
+        };
+      }
+    });
 
-    if (ctx.isRedirected) {
-      await ctx.updateText("market.status", {
-        parse_mode: "Markdown",
-        // reply_markup: { inline_keyboard: [[]] },
-      });
-    } else {
-      await ctx.sendMessage("market.status", {
-        parse_mode: "Markdown",
-        reply_markup: { inline_keyboard: [[]] },
-      });
-    }
+    await ctx.sendMessage("market.status", {
+      parse_mode: "Markdown",
+    });
   });
 
   bot.command(new RegExp("eth", "i")).invoke(async ctx => {
     ctx.bot.api.sendChatAction(ctx.meta.chat.id, "typing");
-    const exchanges = await Promise.all([cryptomkt.getCandle(), surbtc.getCandle("ETH", "CLP")]);
 
-    ctx.inlineKeyboard([
-      [
-        {
-          ":arrows_counterclockwise: Actualizar": { go: "eth" },
-        },
-      ],
-    ]);
+    const promises = [cryptomkt.getCandle(), surbtc.getCandle("ETH", "CLP")].map(p => Bluebird.resolve(p).reflect());
+    const exchanges = await Bluebird.all(promises);
 
     ctx.data.date = moment().format("YYYY/MM/DD HH:mm:ss");
-    ctx.data.exchanges = exchanges.map((exchange, i) => ({
-      name: i === 0 ? "CryptoMKT" : "SurBTC",
-      change: "ETH/CLP",
-      ask: Money.render(exchange.current.ask),
-      bid: Money.render(exchange.current.bid),
-      volume: Money.render(exchange.current.volume),
-    }));
+    ctx.data.exchanges = exchanges.map((inspection, i) => {
+      if (!inspection.isFulfilled()) {
+        return {
+          name: i === 0 ? "CryptoMKT" : "SurBTC",
+          change: "ETH/CLP",
+          ask: "ERROR",
+          bid: "ERROR",
+          volume: "ERROR",
+        };
+      } else {
+        const exchange = inspection.value();
+        return {
+          name: i === 0 ? "CryptoMKT" : "SurBTC",
+          change: "ETH/CLP",
+          ask: Money.render(exchange.current.ask),
+          bid: Money.render(exchange.current.bid),
+          volume: Money.render(exchange.current.volume),
+        };
+      }
+    });
 
-    if (ctx.isRedirected) {
-      await ctx.updateText("market.status", {
-        parse_mode: "Markdown",
-        // reply_markup: { inline_keyboard: [[]] },
-      });
-    } else {
-      await ctx.sendMessage("market.status", {
-        parse_mode: "Markdown",
-        reply_markup: { inline_keyboard: [[]] },
-      });
-    }
+    await ctx.sendMessage("market.status", {
+      parse_mode: "Markdown",
+    });
   });
 };
